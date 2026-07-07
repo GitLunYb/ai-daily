@@ -1,0 +1,24 @@
+{
+  "name": "MorningAI",
+  "owner": {
+    "name": "octo-patch",
+    "url": "https://github.com/octo-patch"
+  },
+  "metadata": {
+    "description": "Daily-scheduled AI news tracker. Collects updates from 80+ AI entities across 5 automated sources + agent X/Twitter search."
+  },
+  "plugins": [
+    {
+      "name": "morning-ai",
+      "description": "Track 80+ AI entities across Reddit, HN, GitHub, HuggingFace, arXiv, and agent X/Twitter search. Daily-scheduled with scored, deduplicated Markdown reports. Supports unattended cron execution.",
+      "version": "1.4.1",
+      "author": {
+        "name": "octo-patch",
+        "url": "https://github.com/octo-patch"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/octo-patch/MorningAI"
+    }
+  ]
+}

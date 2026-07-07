@@ -1,0 +1,50 @@
+name: Daily AI Digest
+
+on:
+  schedule:
+    - cron: '0 0 * * *'    # UTC 0:00 = 北京 8:00
+  workflow_dispatch:       # 手动触发测试
+
+permissions:
+  contents: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install openai
+      - name: 设置日期(北京时区)
+        id: date
+        run: echo "today=$(date -u -d '+8 hours' +%F)" >> $GITHUB_OUTPUT
+      - name: 收集数据
+        run: python skills/tracking-list/scripts/collect.py --depth default --skip x --output data.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 生成报告(GLM,失败则兜底)
+        run: python report.py data.json
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      - name: 提交报告到 repo
+        run: |
+          git config user.name "ai-digest-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add reports/*.md
+          git commit -m "daily digest ${{ steps.date.outputs.today }}" || true
+          git push
+      - name: 发送邮件
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.163.com
+          server_port: 465
+          secure: true
+          username: Yuebin_Lun@163.com
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "AI日报 ${{ steps.date.outputs.today }}"
+          to: Yuebin_Lun@163.com
+          from: "AI日报 <Yuebin_Lun@163.com>"
+          body: file://reports/report_${{ steps.date.outputs.today }}.md
+          convert_markdown: true
