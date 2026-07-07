@@ -74,9 +74,9 @@ def llm_report(data, date_str):
         "再按 Product/Model/Benchmark/Funding 分类列出其余,每条带分数和链接。语言简洁。\n"
         "数据:\n" + json.dumps(brief, ensure_ascii=False)
     )
-    client = OpenAI(api_key=api_key, base_url="https://open.bigmodel.cn/api/coding/paas/v4")
+    client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     resp = client.chat.completions.create(
-        model="glm-5.2",
+        model="deepseek-chat",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
         max_tokens=2500,
