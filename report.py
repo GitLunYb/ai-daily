@@ -34,9 +34,11 @@ def rule_based_report(data, date_str):
 
     def fmt(it):
         title = it.get("title") or it.get("entity") or "无标题"
-        url = it.get("url") or ""
+        url = it.get("source_url") or it.get("url") or ""
         link = f"[{title}]({url})" if url else title
-        return f"- **[{imp(it)}]** {link} `{it.get('source', '')}`"
+        sm = it.get("summary") or ""
+        sm = f" — {sm[:60]}" if sm else ""
+        return f"- **[{imp(it)}]** {link} `{it.get('source', '')}`{sm}"
 
     for title, group in [("重点(7+)", high), ("重要(5-7)", mid), ("常规(<5)", low)]:
         if group:
@@ -57,30 +59,43 @@ def llm_report(data, date_str):
     if not api_key:
         return None
     items = data.get("items", [])
-    brief = [
-        {
+    today = date_str
+    brief = []
+    for it in items:
+        eng = it.get("engagement") or {}
+        brief.append({
             "id": it.get("id"),
             "title": it.get("title"),
+            "summary": it.get("summary"),
             "source": it.get("source"),
             "entity": it.get("entity"),
+            "type": it.get("content_type"),
             "score": it.get("importance"),
-            "url": it.get("url"),
-        }
-        for it in items
-    ]
+            "stars": eng.get("stars"),
+            "date": it.get("date"),
+            "url": it.get("source_url") or it.get("url"),
+            "verified": it.get("verified"),
+        })
     prompt = (
-        f"你是 AI 资讯编辑。根据下面 {date_str} 收集的 AI 动态数据(JSON),"
-        "生成一份中文 Markdown 日报:先 TLDR(分数 7+ 的重点 3-5 条),"
-        "再按 Product/Model/Benchmark/Funding 分类列出其余,每条带分数和链接。语言简洁。\n"
+        f"你是资深 AI 技术编辑。根据下面 {date_str} 收集的 AI 动态数据(JSON)写一份中文 Markdown 日报。\n"
+        f"今天日期是 {today},数据里每条有 date 字段。\n"
+        "写作要求:\n"
+        "1. **TL;DR**:5 条今日重点,每条一句话点出最值得关注的事。\n"
+        "2. **每个项目**:名称 + 一句话简介(基于 summary,说清楚是干啥的;summary 为空就基于标题简写,别编)+ 评分 + 简评(为什么重要 / 影响)。\n"
+        "3. **高分(≥8)或高星(stars>1000)的项目**:在简介后加一段深入讲(技术亮点、意义、为什么值得关注)。\n"
+        "4. **今日精讲**:从所有项目里选 1 个最有未来潜力的,单独一节深入分析:它是什么、技术亮点、解决什么问题、未来潜力、潜在风险。\n"
+        "5. **日期标注**:date 等于今天的项目标 🆕;不是今天的标出实际日期,让读者知道哪些是今天新增、哪些是近几天累积。\n"
+        "6. 按 Product / Model / Benchmark / Funding 分类组织(没内容的分类省略)。\n"
+        "7. 语言专业简洁,不要编造数据里没有的事实。每条附链接。\n"
         "数据:\n" + json.dumps(brief, ensure_ascii=False)
     )
     client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     resp = client.chat.completions.create(
         model="deepseek-chat",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
-        max_tokens=2500,
-        timeout=120,
+        temperature=0.4,
+        max_tokens=4000,
+        timeout=180,
     )
     return resp.choices[0].message.content
 
