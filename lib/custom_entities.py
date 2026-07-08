@@ -385,7 +385,7 @@ def load_builtin_entities() -> Dict[str, Dict[str, Any]]:
         Merged dictionary with keys matching PLATFORM_KEYS values.
     """
     merged = _empty_registry()
-    entities_dir = Path(__file__).resolve().parent.parent / "entities"
+    entities_dir = Path(os.environ.get("ENTITIES_DIR") or str(Path(__file__).resolve().parent.parent / "entities"))
 
     if not entities_dir.is_dir():
         return merged

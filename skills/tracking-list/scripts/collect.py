@@ -97,6 +97,18 @@ def collect_x(config: Dict[str, Any], from_date: str, to_date: str, depth: str) 
     )
 
 
+def collect_zhihu(config: Dict[str, Any], from_date: str, to_date: str, depth: str) -> CollectionResult:
+    """Collect from 知乎 (RSSHub RSS)."""
+    from lib import zhihu
+    return zhihu.collect(config, from_date, to_date, depth)
+
+
+def collect_wechat(config: Dict[str, Any], from_date: str, to_date: str, depth: str) -> CollectionResult:
+    """Collect from 微信公众号 (RSS)."""
+    from lib import wechat
+    return wechat.collect(config, from_date, to_date, depth)
+
+
 # All collectors with their names
 COLLECTORS = {
     "x": collect_x,
@@ -105,6 +117,8 @@ COLLECTORS = {
     "github": collect_github,
     "huggingface": collect_huggingface,
     "arxiv": collect_arxiv,
+    "zhihu": collect_zhihu,
+    "wechat": collect_wechat,
 }
 
 

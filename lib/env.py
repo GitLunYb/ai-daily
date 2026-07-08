@@ -77,4 +77,6 @@ def get_available_sources(config: Dict[str, Any]) -> Dict[str, bool]:
         "github": bool(get_key(config, "GITHUB_TOKEN")),
         "huggingface": True,  # public API
         "arxiv": True,  # public API
+        "zhihu": True,  # RSSHub RSS, collector checks config file
+        "wechat": True,  # RSS, collector checks config file
     }
