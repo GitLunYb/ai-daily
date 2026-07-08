@@ -10,6 +10,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -38,8 +39,9 @@ def get_time_window(date_str: str) -> tuple:
     Returns:
         (from_date, to_date) as YYYY-MM-DD strings
     """
+    window_days = int(os.environ.get("WINDOW_DAYS", "3"))
     dt = datetime.strptime(date_str, "%Y-%m-%d")
-    from_date = (dt - timedelta(days=3)).strftime("%Y-%m-%d")
+    from_date = (dt - timedelta(days=window_days)).strftime("%Y-%m-%d")
     to_date = date_str
     return from_date, to_date
 
